@@ -13,6 +13,7 @@ public class StartActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_start);
         mLogintoBtn = (Button)findViewById(R.id.login_to_btn);
         mRegBtn = (Button)findViewById(R.id.startRegBtn);

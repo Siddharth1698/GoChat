@@ -86,18 +86,18 @@ public class RegisterActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()){
-                                         mRegProgress.dismiss();
-                                         Intent main_intent = new Intent(RegisterActivity.this,MainActivity.class);
-                                         main_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                         startActivity(main_intent);
-                                         finish();
+                                        mRegProgress.dismiss();
+                                        Intent main_intent = new Intent(RegisterActivity.this,MainActivity.class);
+                                        main_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                        startActivity(main_intent);
+                                        finish();
                                     }
                                 }
                             });
 
 
                         } else {
-                             mRegProgress.hide();
+                            mRegProgress.hide();
                             Toast.makeText(RegisterActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
 
