@@ -12,8 +12,7 @@
         android:layout_height="170dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="43dp"
-        android:background="@mipmap/ic_launcher" />
+        android:layout_marginTop="43dp" />
 
     <TextView
         android:id="@+id/settings_display_name"

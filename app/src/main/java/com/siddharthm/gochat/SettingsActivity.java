@@ -1,5 +1,6 @@
 package com.siddharthm.gochat;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -22,6 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -40,6 +42,7 @@ public class SettingsActivity extends AppCompatActivity {
     private TextView mStatus;
     private static final int GALLERY_PICK = 1;
     private StorageReference mImageStorageRef;
+    private ProgressDialog mProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +67,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                 mName.setText(name);
                 mStatus.setText(status);
+                Picasso.with(SettingsActivity.this).load(image).into(mCircleImage);
             }
 
             @Override
@@ -108,33 +112,36 @@ public class SettingsActivity extends AppCompatActivity {
             if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
                 CropImage.ActivityResult result = CropImage.getActivityResult(data);
                 if (resultCode == RESULT_OK) {
+                    mProgress = new ProgressDialog(SettingsActivity.this);
+                    mProgress.setTitle("Uploading Image");
+                    mProgress.setMessage("Changing Profile Image...");
+                    mProgress.setCanceledOnTouchOutside(false);
+                    mProgress.show();
                     Uri resultUri = result.getUri();
-                   StorageReference filepath = mImageStorageRef.child("ProfileImages").child(random()+".jpg");
+                   StorageReference filepath = mImageStorageRef.child("ProfileImages").child(mCurrentUser+".jpg");
                    filepath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                        @Override
                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                            if (task.isSuccessful()){
                                Toast.makeText(getApplicationContext(),"uploaded",Toast.LENGTH_SHORT).show();
+                               String downloadUrl = task.getResult().getDownloadUrl().toString();
+                               mUserDatabase.child("image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                   @Override
+                                   public void onComplete(@NonNull Task<Void> task) {
+                                       if (task.isSuccessful()){
+                                           mProgress.dismiss();
+                                       }
+                                   }
+                               });
 
                            }
                        }
                    });
                 } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                    Exception error = result.getError();
+                 mProgress.dismiss();
                 }
             }
 
 
-    }
-    public static String random() {
-        Random generator = new Random();
-        StringBuilder randomStringBuilder = new StringBuilder();
-        int randomLength = generator.nextInt(10);
-        char tempChar;
-        for (int i = 0; i < randomLength; i++){
-            tempChar = (char) (generator.nextInt(96) + 32);
-            randomStringBuilder.append(tempChar);
-        }
-        return randomStringBuilder.toString();
     }
 }
