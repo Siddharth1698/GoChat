@@ -129,8 +129,9 @@ public class SettingsActivity extends AppCompatActivity {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 thumb_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 final byte[] thumb_data = baos.toByteArray();
-                StorageReference filepath = mImageStorageRef.child("ProfileImages").child(mCurrentUser+".jpg");
-                final StorageReference thumb_filepath = mImageStorageRef.child("ProfileImages").child("thumbs").child(mCurrentUser + ".jpg");
+                String current_uid = mCurrentUser.getUid();
+                StorageReference filepath = mImageStorageRef.child("ProfileImages").child(current_uid +".jpg");
+                final StorageReference thumb_filepath = mImageStorageRef.child("ProfileImages").child("thumbs").child(current_uid + ".jpg");
                 filepath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {

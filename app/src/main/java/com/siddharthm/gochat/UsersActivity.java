@@ -1,5 +1,6 @@
 package com.siddharthm.gochat;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,9 @@ import android.widget.TextView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UsersActivity extends AppCompatActivity {
     private Toolbar mToolbar;
@@ -47,6 +51,7 @@ public class UsersActivity extends AppCompatActivity {
             protected void populateViewHolder(UsersViewHolder viewHolder, Users model, int position) {
                   viewHolder.setName(model.getName());
                   viewHolder.setUserStatus(model.getStatus());
+                  viewHolder.setUsersImage(model.getThumbImage(),getApplicationContext());
             }
         };
         mUsersList.setAdapter(firebaseRecyclerAdapter);
@@ -68,6 +73,11 @@ public class UsersActivity extends AppCompatActivity {
         public void setUserStatus(String status) {
             TextView mUserStatus = mView.findViewById(R.id.user_single_status);
             mUserStatus.setText(status);
+        }
+
+        public void setUsersImage(String image, Context ctx) {
+            CircleImageView userImageView = (CircleImageView) mView.findViewById(R.id.user_single_image);
+            Picasso.with(ctx).load(image).placeholder(R.drawable.defaultpic).into(userImageView);
         }
     }
 }
