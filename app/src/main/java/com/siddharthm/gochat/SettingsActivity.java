@@ -2,6 +2,7 @@ package com.siddharthm.gochat;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -27,9 +28,14 @@ import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -109,38 +115,62 @@ public class SettingsActivity extends AppCompatActivity {
             CropImage.activity(imageUri).setAspectRatio(1,1).start(this);}
 
 
-            if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-                CropImage.ActivityResult result = CropImage.getActivityResult(data);
-                if (resultCode == RESULT_OK) {
-                    mProgress = new ProgressDialog(SettingsActivity.this);
-                    mProgress.setTitle("Uploading Image");
-                    mProgress.setMessage("Changing Profile Image...");
-                    mProgress.setCanceledOnTouchOutside(false);
-                    mProgress.show();
-                    Uri resultUri = result.getUri();
-                   StorageReference filepath = mImageStorageRef.child("ProfileImages").child(mCurrentUser+".jpg");
-                   filepath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                       @Override
-                       public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                           if (task.isSuccessful()){
-                               Toast.makeText(getApplicationContext(),"uploaded",Toast.LENGTH_SHORT).show();
-                               String downloadUrl = task.getResult().getDownloadUrl().toString();
-                               mUserDatabase.child("image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                   @Override
-                                   public void onComplete(@NonNull Task<Void> task) {
-                                       if (task.isSuccessful()){
-                                           mProgress.dismiss();
-                                       }
-                                   }
-                               });
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                mProgress = new ProgressDialog(SettingsActivity.this);
+                mProgress.setTitle("Uploading Image");
+                mProgress.setMessage("Changing Profile Image...");
+                mProgress.setCanceledOnTouchOutside(false);
+                mProgress.show();
+                Uri resultUri = result.getUri();
+                File thumb_file_path = new File(resultUri.getPath());
+                Bitmap thumb_bitmap = new Compressor(this).setMaxHeight(200).setMaxHeight(200).compressToBitmap(thumb_file_path);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                thumb_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                final byte[] thumb_data = baos.toByteArray();
+                StorageReference filepath = mImageStorageRef.child("ProfileImages").child(mCurrentUser+".jpg");
+                final StorageReference thumb_filepath = mImageStorageRef.child("ProfileImages").child("thumbs").child(mCurrentUser + ".jpg");
+                filepath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                        if (task.isSuccessful()){
+                            final String downloadUrl = task.getResult().getDownloadUrl().toString();
+                            UploadTask uploadTask = thumb_filepath.putBytes(thumb_data);
+                            uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                    String thumb_download_url = task.getResult().getDownloadUrl().toString();
 
-                           }
-                       }
-                   });
-                } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                 mProgress.dismiss();
-                }
+                                    if (task.isSuccessful()){
+                                        Map update_hashmap = new HashMap();
+                                        update_hashmap.put("image",downloadUrl);
+                                        update_hashmap.put("thumbImage",thumb_download_url);
+
+                                        mUserDatabase.updateChildren(update_hashmap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()){
+                                                    mProgress.dismiss();
+                                                    Toast.makeText(getApplicationContext(),"Profile Pic Changed Succesfully",Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
+
+                                    }else {
+                                        mProgress.dismiss();
+                                    }
+                                }
+                            });
+
+
+                        }
+                    }
+                });
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                mProgress.dismiss();
             }
+        }
 
 
     }
