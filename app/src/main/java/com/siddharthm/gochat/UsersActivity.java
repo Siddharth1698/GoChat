@@ -1,6 +1,7 @@
 package com.siddharthm.gochat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -52,6 +53,17 @@ public class UsersActivity extends AppCompatActivity {
                   viewHolder.setName(model.getName());
                   viewHolder.setUserStatus(model.getStatus());
                   viewHolder.setUsersImage(model.getThumbImage(),getApplicationContext());
+                  final String user_id = getRef(position).getKey();
+                  viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                      @Override
+                      public void onClick(View v) {
+
+                          Intent profile_intent = new Intent(UsersActivity.this,ProfileActivity.class);
+                          profile_intent.putExtra("user_id",user_id);
+                          startActivity(profile_intent);
+
+                      }
+                  });
             }
         };
         mUsersList.setAdapter(firebaseRecyclerAdapter);
