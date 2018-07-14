@@ -72,6 +72,7 @@ public class ProfileActivity extends AppCompatActivity {
             mProfileSendRequestButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    mProfileSendRequestButton.setEnabled(false);
                     if (mCurrentState.equals("not_friends")) {
                         mFriendRequestDb.child(mCurrentUser.getUid()).child(user_id).child("request_type")
                                 .setValue("sent").addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -83,7 +84,9 @@ public class ProfileActivity extends AppCompatActivity {
                                         @Override
                                         public void onSuccess(Void aVoid) {
                                             Toast.makeText(ProfileActivity.this, "Sent Request Succesfully", Toast.LENGTH_SHORT).show();
-                                            mProfileSendRequestButton.setEnabled(false);
+                                            mProfileSendRequestButton.setEnabled(true);
+                                            mCurrentState = "req_sent";
+                                            mProfileSendRequestButton.setText("Cancel Friend Request");
                                         }
                                     });
 
@@ -95,6 +98,26 @@ public class ProfileActivity extends AppCompatActivity {
                             }
                         });
 
+
+                    }
+
+                    if (mCurrentState.equals("req_sent")){
+                        mFriendRequestDb.child(mCurrentUser.getUid()).child(user_id).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                mFriendRequestDb.child(user_id).child(mCurrentUser.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+
+                                        mProfileSendRequestButton.setEnabled(true);
+                                        mCurrentState = "not_friends";
+                                        mProfileSendRequestButton.setText("Send Friend Request");
+
+                                    }
+                                });
+
+                            }
+                        });
 
                     }
                 }
