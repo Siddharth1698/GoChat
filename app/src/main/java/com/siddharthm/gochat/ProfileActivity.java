@@ -76,6 +76,21 @@ public class ProfileActivity extends AppCompatActivity {
                                 mCurrentState = "req_sent";
                                 mProfileSendRequestButton.setText("Cancel Friend Request");
                             }
+                        }else {
+                            mFriendDatabase.child(mCurrentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.hasChild(user_id)){
+                                        mCurrentState = "friends";
+                                        mProfileSendRequestButton.setText("UnFriend");
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
                         }
                     }
 
@@ -146,6 +161,22 @@ public class ProfileActivity extends AppCompatActivity {
                         });
 
                     }
+
+//                    if (mCurrentState.equals("friends")){
+//                        mFriendDatabase.child(mCurrentUser.getUid()).child(user_id).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+//                            @Override
+//                            public void onSuccess(Void aVoid) {
+//                                mFriendDatabase.child(user_id).child(mCurrentUser.getUid()).removeValue() .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                    @Override
+//                                    public void onSuccess(Void aVoid) {
+//                                        mCurrentState = "not_friends";
+//                                        mProfileSendRequestButton.setText("Send Friend Request");
+//                                    }
+//                                });
+//                            }
+//                        });
+//
+//                    }
 
                     if (mCurrentState.equals("req_received")){
                         final String currentDate = DateFormat.getDateInstance().format(new Date());
